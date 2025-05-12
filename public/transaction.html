@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Transaction - My Library</title>
+  <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" />
+  <style>
+    body {
+      background: linear-gradient(rgba(255, 255, 255, 0.9), rgba(255, 255, 255, 0.9)),
+        url('https://images.unsplash.com/photo-1621255619930-739359991b1b?q=80&w=1974&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D');
+      background-size: cover;
+      background-position: center;
+      background-attachment: fixed;
+      font-family: 'Poppins', sans-serif;
+      color: #333;
+      min-height: 100vh;
+    }
+
+    .glass-panel {
+      background: rgba(255, 255, 255, 0.85);
+      backdrop-filter: blur(10px);
+      border: 1px solid rgba(0, 0, 0, 0.1);
+      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+      animation: fadeIn 0.6s ease-out forwards;
+    }
+
+    @keyframes fadeIn {
+      from {
+        opacity: 0;
+        transform: translateY(20px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+  </style>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body class="flex flex-col">
+
+  <header class="bg-indigo-700 p-4 text-white text-center text-2xl font-bold shadow-lg">
+    <div class="flex items-center justify-center">
+      <img src="https://www.flaticon.com/free-animated-icon/book_12747800" alt="Book Icon" class="w-8 h-8 mr-2" onerror="this.src='https://cdn-icons-png.flaticon.com/512/2702/2702154.png'">
+      Transaction Details
+    </div>
+  </header>
+
+  <main class="flex-1 p-6 flex items-center justify-center">
+    <div class="glass-panel w-full max-w-2xl p-8 rounded-lg shadow-lg">
+      <h2 class="text-2xl font-bold mb-6 text-center text-indigo-700">Your Purchase Summary</h2>
+
+      <div id="transactionDetails" class="mb-6 space-y-3">
+        <!-- Transaction items will appear here -->
+      </div>
+
+      <div class="mt-8 text-right">
+        <h3 class="text-xl font-bold mb-4 text-indigo-700">
+          <i class="fas fa-wallet mr-2"></i>Total Amount: ₹<span id="totalAmount"></span>
+        </h3>
+        <button onclick="pay()" class="bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-2 px-6 rounded-lg shadow-md transition-all duration-300 transform hover:scale-105">
+          <i class="fas fa-credit-card mr-2"></i>Pay Now
+        </button>
+      </div>
+    </div>
+  </main>
+
+  <!-- Payment Modal -->
+  <div id="paymentModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center hidden z-50">
+    <div class="bg-white p-6 rounded-lg w-full max-w-md text-gray-800 shadow-xl">
+      <h3 class="text-xl font-bold mb-4 text-indigo-700">Choose Payment Method</h3>
+      <div class="space-y-4">
+        <button onclick="confirmPayment('UPI')" class="w-full bg-blue-600 hover:bg-blue-700 py-2 rounded-lg text-white flex items-center justify-center transition-all duration-300">
+          <i class="fas fa-mobile-alt mr-2"></i>Pay via UPI
+        </button>
+        <button onclick="confirmPayment('Debit Card')" class="w-full bg-green-600 hover:bg-green-700 py-2 rounded-lg text-white flex items-center justify-center transition-all duration-300">
+          <i class="fas fa-credit-card mr-2"></i>Pay via Debit Card
+        </button>
+        <button onclick="closeModal()" class="w-full bg-gray-300 hover:bg-gray-400 py-2 rounded-lg text-gray-800 flex items-center justify-center transition-all duration-300">
+          <i class="fas fa-times mr-2"></i>Cancel
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    let cart = [];
+
+    function loadTransactionDetails() {
+      const cartData = localStorage.getItem('cart');
+      if (cartData) {
+        cart = JSON.parse(cartData);
+        const transactionDetails = document.getElementById('transactionDetails');
+        const totalAmount = cart.reduce((acc, item) => acc + item.price, 0);
+        document.getElementById('totalAmount').innerText = totalAmount;
+
+        cart.forEach(item => {
+          const div = document.createElement('div');
+          div.className = 'flex justify-between items-center p-3 border-b border-gray-200';
+          div.innerHTML = `
+            <div>
+              <p class="font-medium text-gray-800">${item.title} <span class="text-sm text-gray-500">(${item.type})</span></p>
+            </div>
+            <span class="text-indigo-600 font-bold">₹${item.price}</span>
+          `;
+          transactionDetails.appendChild(div);
+        });
+      }
+    }
+
+    function pay() {
+      document.getElementById('paymentModal').classList.remove('hidden');
+    }
+
+    function closeModal() {
+      document.getElementById('paymentModal').classList.add('hidden');
+    }
+
+    function confirmPayment(method) {
+      alert(`✅ Payment successful via ${method}! Thank you for your purchase.`);
+      localStorage.removeItem('cart');
+      closeModal();
+      window.location.href = '/';
+    }
+    function confirmPayment(method) {
+  // Get current transactions or initialize empty array
+  let transactions = JSON.parse(localStorage.getItem('transactions')) || [];
+  
+  // Create new transaction record
+  const newTransaction = {
+    id: Date.now(), // Using timestamp as simple ID
+    date: new Date().toLocaleString(),
+    items: [...cart], // Copy cart items
+    total: cart.reduce((sum, item) => sum + item.price, 0),
+    paymentMethod: method
+  };
+  
+  // Add to transactions
+  transactions.push(newTransaction);
+  localStorage.setItem('transactions', JSON.stringify(transactions));
+  
+  alert(`✅ Payment successful via ${method}! Thank you for your purchase.`);
+  localStorage.removeItem('cart');
+  closeModal();
+  window.location.href = 'transactions.html'; // Redirect to transactions page
+}
+
+    loadTransactionDetails();
+  </script>
+</body>
+</html>

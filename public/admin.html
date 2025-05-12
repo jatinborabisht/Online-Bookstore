@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Admin - My Library</title>
+  <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" />
+  <style>
+    body {
+      background: linear-gradient(rgba(255, 255, 255, 0.92), rgba(255, 255, 255, 0.92)),
+        url('https://images.unsplash.com/photo-1621255619930-739359991b1b?q=80&w=1974&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D');
+      background-size: cover;
+      background-position: center;
+      background-attachment: fixed;
+      font-family: 'Poppins', sans-serif;
+      color: #333;
+      min-height: 100vh;
+    }
+
+    .glass-panel {
+      background: rgba(255, 255, 255, 0.9);
+      backdrop-filter: blur(4px);
+      border: 1px solid rgba(0, 0, 0, 0.1);
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
+      animation: fadeIn 0.6s ease-out forwards;
+    }
+
+    @keyframes fadeIn {
+      from {
+        opacity: 0;
+        transform: translateY(20px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    input, select {
+      background: rgba(255, 255, 255, 0.9);
+      color: #333;
+      border-color: #e2e8f0;
+    }
+
+    input::placeholder {
+      color: #a0aec0;
+    }
+    
+    .admin-header {
+      background: linear-gradient(90deg, #4338ca, #6366f1);
+    }
+    
+    .btn-primary {
+      background: linear-gradient(90deg, #4338ca, #6366f1);
+      transition: all 0.3s ease;
+    }
+    
+    .btn-primary:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 5px 15px rgba(99, 102, 241, 0.4);
+    }
+  </style>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body class="flex items-center justify-center min-h-screen px-4">
+
+  <div class="glass-panel p-8 rounded-lg shadow-lg w-full max-w-md">
+    <div class="text-center mb-6">
+      <img src="https://www.flaticon.com/free-animated-icon/book_12747800" alt="Book Icon" class="w-16 h-16 mx-auto mb-2" onerror="this.src='https://cdn-icons-png.flaticon.com/512/2702/2702154.png'">
+      <h2 class="text-3xl font-bold text-indigo-700">
+        Add New Book
+      </h2>
+      <p class="text-gray-500 text-sm">My Library Admin Panel</p>
+    </div>
+
+    <form id="bookForm" class="space-y-4">
+      <input type="text" name="title" placeholder="Book Title" required class="w-full p-3 rounded-lg border focus:outline-none focus:ring-2 focus:ring-indigo-500 shadow-sm" />
+      <input type="text" name="author" placeholder="Author Name" required class="w-full p-3 rounded-lg border focus:outline-none focus:ring-2 focus:ring-indigo-500 shadow-sm" />
+      <input type="number" name="price" step="0.01" min="0" placeholder="Selling Price (₹)" required class="w-full p-3 rounded-lg border focus:outline-none focus:ring-2 focus:ring-indigo-500 shadow-sm" />
+      <input type="number" name="rent_price" step="0.01" min="0" placeholder="Rent Price (₹)" required class="w-full p-3 rounded-lg border focus:outline-none focus:ring-2 focus:ring-indigo-500 shadow-sm" />
+      <input type="number" name="stock" min="1" placeholder="Stock Quantity" required class="w-full p-3 rounded-lg border focus:outline-none focus:ring-2 focus:ring-indigo-500 shadow-sm" />
+      <input type="text" name="image_url" placeholder="Image URL" required class="w-full p-3 rounded-lg border focus:outline-none focus:ring-2 focus:ring-indigo-500 shadow-sm" />
+
+      <select name="type" required class="w-full p-3 rounded-lg border text-gray-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 shadow-sm">
+        <option value="" disabled selected>Select Book Type</option>
+        <option value="buy">Buy</option>
+        <option value="rent">Rent</option>
+        <option value="both">Buy & Rent</option>
+      </select>
+
+      <button type="submit" class="btn-primary text-white font-bold py-3 px-4 rounded-lg w-full shadow-md">
+        <i class="fas fa-plus-circle mr-2"></i>Add Book
+      </button>
+    </form>
+
+    <div id="message" class="text-center mt-4 text-sm font-medium"></div>
+
+    <div class="text-center mt-6">
+      <button onclick="logout()" class="bg-red-500 hover:bg-red-600 text-white py-2 px-4 rounded-lg shadow-md transition-all duration-300 transform hover:scale-105">
+        <i class="fas fa-sign-out-alt mr-1"></i>Logout
+      </button>
+    </div>
+  </div>
+
+  <script>
+    const form = document.getElementById('bookForm');
+    const messageDiv = document.getElementById('message');
+
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+
+      const formData = new FormData(form);
+      const data = Object.fromEntries(formData);
+      const token = localStorage.getItem('token');
+
+      try {
+        const res = await fetch('/api/admin/add-book', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`
+          },
+          body: JSON.stringify(data)
+        });
+
+        const result = await res.json();
+        messageDiv.textContent = result.message;
+        messageDiv.className = res.ok
+          ? 'text-green-600 mt-4 font-semibold'
+          : 'text-red-600 mt-4 font-semibold';
+
+        if (res.ok) {
+          form.reset();
+        }
+
+      } catch (error) {
+        messageDiv.textContent = 'Something went wrong. Please try again.';
+        messageDiv.className = 'text-red-600 mt-4 font-semibold';
+      }
+    });
+
+    function logout() {
+      localStorage.removeItem('token');
+      window.location.href = '/login.html';
+    }
+  </script>
+
+</body>
+</html>

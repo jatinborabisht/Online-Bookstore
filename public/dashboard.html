@@ -1,0 +1,332 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Dashboard - My Library</title>
+  <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+  <style>
+    body {
+      background: linear-gradient(rgba(255, 255, 255, 0.92), rgba(255, 255, 255, 0.92)),
+        url('https://images.unsplash.com/photo-1621255619930-739359991b1b?q=80&w=1974&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D');
+      background-size: cover;
+      background-position: center;
+      background-attachment: fixed;
+      font-family: 'Poppins', sans-serif;
+      color: #333;
+      min-height: 100vh;
+    }
+
+    .book-card {
+      background: white;
+      border-radius: 12px;
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+      transition: all 0.3s ease;
+      overflow: hidden;
+      border: 1px solid rgba(0, 0, 0, 0.05);
+    }
+
+    .book-card:hover {
+      transform: translateY(-8px);
+      box-shadow: 0 15px 30px rgba(0, 0, 0, 0.12);
+    }
+
+    .cart-panel {
+      background: white;
+      border-radius: 12px;
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+      border: 1px solid rgba(0, 0, 0, 0.05);
+    }
+
+    .nav-button {
+      transition: all 0.3s ease;
+    }
+
+    .nav-button:hover {
+      transform: translateY(-2px);
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(20px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .animate-fade-in {
+      animation: fadeIn 0.6s ease-out forwards;
+    }
+
+    .delay-100 { animation-delay: 0.1s; }
+    .delay-200 { animation-delay: 0.2s; }
+    .delay-300 { animation-delay: 0.3s; }
+    .delay-400 { animation-delay: 0.4s; }
+    
+    .gradient-header {
+      background: linear-gradient(90deg, #4338ca, #6366f1);
+    }
+    
+    .btn-primary {
+      background: linear-gradient(90deg, #4338ca, #6366f1);
+      transition: all 0.3s ease;
+    }
+    
+    .btn-primary:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 5px 15px rgba(99, 102, 241, 0.4);
+    }
+    
+    .buy-btn {
+      background: linear-gradient(90deg, #047857, #10b981);
+    }
+    
+    .rent-btn {
+      background: linear-gradient(90deg, #2563eb, #3b82f6);
+    }
+  </style>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body class="flex flex-col">
+
+  <header class="gradient-header p-4 text-white text-center text-2xl font-bold shadow-lg">
+    <div class="container mx-auto flex justify-between items-center">
+      <div class="flex items-center">
+        <img src="https://www.flaticon.com/free-animated-icon/book_12747800" alt="Book Icon" class="w-8 h-8 mr-3" onerror="this.src='https://cdn-icons-png.flaticon.com/512/2702/2702154.png'">
+        <h1>My Library</h1>
+      </div>
+      <div>
+        <button onclick="viewTransactions()" class="bg-purple-600 hover:bg-purple-700 text-white font-bold py-2 px-4 rounded-lg nav-button mr-2">
+          <i class="fas fa-history mr-2"></i>My Transactions
+        </button>
+        <button onclick="logout()" class="bg-blue-400 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-lg nav-button">
+          <i class="fas fa-sign-out-alt mr-2"></i>Logout
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <main class="flex-1 p-6 container mx-auto">
+    <div class="mb-8 text-center">
+      <h2 class="text-3xl font-bold mb-2 text-indigo-700">Explore Your Literary World</h2>
+      <p class="text-gray-600">Discover books that inspire, entertain, and enlighten</p>
+    </div>
+
+    <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6 mb-12" id="bookList">
+      <!-- Books will be inserted here dynamically -->
+    </div>
+
+    <div class="cart-panel p-6 rounded-lg shadow-xl">
+      <div class="flex justify-between items-center mb-6">
+        <h2 class="text-2xl font-bold text-indigo-700">
+          <i class="fas fa-shopping-cart mr-2"></i>My Cart
+        </h2>
+        <span id="cartTotal" class="text-xl font-bold text-indigo-700">₹0</span>
+      </div>
+
+      <div id="cartItems" class="mb-6 max-h-64 overflow-y-auto"></div>
+
+      <div class="flex justify-end space-x-4">
+        <button onclick="clearCart()" class="bg-gray-500 hover:bg-gray-600 text-white font-bold py-2 px-4 rounded-lg nav-button">
+          <i class="fas fa-trash-alt mr-2"></i>Clear Cart
+        </button>
+        <button onclick="checkout()" class="btn-primary text-white font-bold py-2 px-4 rounded-lg nav-button">
+          <i class="fas fa-credit-card mr-2"></i>Checkout
+        </button>
+      </div>
+    </div>
+  </main>
+
+  <footer class="bg-gray-100 p-4 text-center text-gray-600 text-sm border-t border-gray-200">
+    © 2025 My Library. All rights reserved.
+  </footer>
+
+  <script>
+    let cart = JSON.parse(localStorage.getItem('cart')) || [];
+
+    // Fetch books from the server
+    async function fetchBooks() {
+      try {
+        const token = localStorage.getItem('token');
+        if (!token) {
+          window.location.href = '/login.html';
+          return;
+        }
+
+        const res = await fetch('/api/books', {
+          headers: {
+            'Authorization': `Bearer ${token}`
+          }
+        });
+        
+        if (!res.ok) throw new Error('Failed to fetch books');
+        
+        const books = await res.json();
+        renderBooks(books);
+      } catch (error) {
+        console.error('Error:', error);
+        alert('Failed to load books. Please try again.');
+      }
+    }
+
+    // Render books
+    function renderBooks(books) {
+      const bookList = document.getElementById('bookList');
+      bookList.innerHTML = '';
+
+      books.forEach((book, index) => {
+        const div = document.createElement('div');
+        div.className = `book-card animate-fade-in delay-${(index % 4) * 100}`;
+        div.innerHTML = `
+          <div class="h-64 overflow-hidden">
+            <img src="${book.image_url || 'https://via.placeholder.com/300x400?text=Book+Cover'}" 
+                 alt="${book.title}" 
+                 class="w-full h-full object-cover transition-transform duration-500 hover:scale-105">
+          </div>
+          <div class="p-4">
+            <h3 class="font-bold text-lg mb-2 truncate text-indigo-700">${book.title}</h3>
+            <p class="text-sm mb-2 text-gray-500">By ${book.author}</p>
+            <div class="flex justify-between items-center mb-4">
+              <span class="text-emerald-600 font-bold">Buy: ₹${book.price}</span>
+              <span class="text-blue-600 font-bold">Rent: ₹${book.rent_price}</span>
+            </div>
+            <div class="flex flex-col gap-2">
+              <button onclick="addToCart(${book.id}, 'buy', ${book.price}, '${book.title.replace(/'/g, "\\'")}')" 
+                      class="buy-btn hover:opacity-90 text-white py-2 px-3 rounded-lg flex items-center justify-center shadow-sm">
+                <i class="fas fa-shopping-bag mr-2"></i> Buy
+              </button>
+              <button onclick="addToCart(${book.id}, 'rent', ${book.rent_price}, '${book.title.replace(/'/g, "\\'")}')" 
+                      class="rent-btn hover:opacity-90 text-white py-2 px-3 rounded-lg flex items-center justify-center shadow-sm">
+                <i class="fas fa-calendar-alt mr-2"></i> Rent
+              </button>
+            </div>
+          </div>
+        `;
+        bookList.appendChild(div);
+      });
+    }
+
+    // Add books to cart
+    function addToCart(bookId, type, price, title) {
+      cart.push({ bookId, type, price, title });
+      updateCart();
+      showNotification(`${title} added to cart!`);
+    }
+
+    // Remove item from cart
+    function removeFromCart(index) {
+      cart.splice(index, 1);
+      updateCart();
+    }
+
+    // Clear cart
+    function clearCart() {
+      if (cart.length === 0) return;
+      if (confirm('Are you sure you want to clear your cart?')) {
+        cart = [];
+        updateCart();
+        showNotification('Cart cleared!');
+      }
+    }
+
+    // Update cart display
+    function updateCart() {
+      localStorage.setItem('cart', JSON.stringify(cart));
+      renderCart();
+      updateCartTotal();
+    }
+
+    // Render cart items
+    function renderCart() {
+      const cartItems = document.getElementById('cartItems');
+      cartItems.innerHTML = '';
+
+      if (cart.length === 0) {
+        cartItems.innerHTML = `
+          <div class="text-center py-8 text-gray-400">
+            <i class="fas fa-book text-4xl mb-4"></i>
+            <p>Your cart is empty</p>
+          </div>
+        `;
+        return;
+      }
+
+      cart.forEach((item, index) => {
+        const div = document.createElement('div');
+        div.className = 'flex justify-between items-center p-3 border-b border-gray-200';
+        div.innerHTML = `
+          <div class="flex items-center">
+            <span class="mr-3 ${item.type === 'buy' ? 'text-emerald-600' : 'text-blue-600'}">
+              ${item.type === 'buy' ? '<i class="fas fa-shopping-bag"></i>' : '<i class="fas fa-calendar-alt"></i>'}
+            </span>
+            <div>
+              <p class="font-medium">${item.title}</p>
+              <p class="text-sm text-gray-500">${item.type} - ₹${item.price}</p>
+            </div>
+          </div>
+          <button onclick="removeFromCart(${index})" class="text-red-500 hover:text-red-600 transition-colors">
+            <i class="fas fa-times"></i>
+          </button>
+        `;
+        cartItems.appendChild(div);
+      });
+    }
+
+    // Update cart total
+    function updateCartTotal() {
+      const total = cart.reduce((sum, item) => sum + item.price, 0);
+      document.getElementById('cartTotal').textContent = `₹${total}`;
+    }
+
+    // Show notification
+    function showNotification(message) {
+      const notification = document.createElement('div');
+      notification.className = 'fixed bottom-4 right-4 bg-indigo-600 text-white px-4 py-2 rounded-lg shadow-lg flex items-center transform transition-all duration-300';
+      notification.innerHTML = `
+        <i class="fas fa-check-circle mr-2"></i>
+        <span>${message}</span>
+      `;
+      document.body.appendChild(notification);
+      setTimeout(() => {
+        notification.classList.add('opacity-0', 'translate-y-2');
+        setTimeout(() => notification.remove(), 500);
+      }, 3000);
+    }
+
+    // Proceed to checkout
+    async function checkout() {
+      if (cart.length === 0) {
+        showNotification('Your cart is empty!');
+        return;
+      }
+
+      try {
+        const token = localStorage.getItem('token');
+        if (!token) {
+          window.location.href = '/login.html';
+          return;
+        }
+
+        localStorage.setItem('cart', JSON.stringify(cart));
+        window.location.href = '/transaction.html';
+      } catch (error) {
+        console.error('Checkout error:', error);
+        showNotification('Checkout failed. Please try again.');
+      }
+    }
+    
+    function logout() {
+      localStorage.removeItem('token');
+      localStorage.removeItem('cart');
+      window.location.href = '/login.html';
+    }
+    function viewTransactions() {
+  window.location.href = 'transactions.html';
+}
+
+    document.addEventListener('DOMContentLoaded', () => {
+      fetchBooks();
+      renderCart();
+      updateCartTotal();
+    });
+  </script>
+</body>
+</html>
