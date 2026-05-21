@@ -5,7 +5,6 @@ const path = require('path');
 
 // Load env variables
 dotenv.config();
-
 const app = express();
 
 // Middlewares
