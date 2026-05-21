@@ -19,7 +19,12 @@ router.post('/register', (req, res) => {
       'INSERT INTO users (username, email, password) VALUES (?, ?, ?)',
       [username, email, hash],
       (err, result) => {
-        if (err) return res.status(400).json({ message: 'Email already exists or error' });
+        if (err) {
+  if (err.code === 'ER_DUP_ENTRY') {
+    return res.status(400).json({ message: 'Email already registered. Try a different one.' });
+  }
+  return res.status(500).json({ message: err.sqlMessage || err.message });
+}
         res.json({ message: 'User registered successfully' });
       }
     );
